@@ -1,91 +1,32 @@
-from dataclasses import dataclass
-
 import pytest
+from selene import by, be
+from selene.support.shared import browser
+
+url = 'https://github.com'
 
 
-@pytest.mark.fast
-def test_with_param():
-	pass
+@pytest.fixture(scope='function', params=[(1600, 900), (1280, 1024)])
+def browser_settings_desktop(request):
+    browser.config.window_width = request.param[0]
+    browser.config.window_height = request.param[1]
 
-# кей - валью в скобках []
-# @pytest.mark.parametrize("browser, user",
-#                          [
-# 	                         pytest.param("firefox", 1, id="Firefox with first user"),
-# 	                         pytest.param("chrome", 2, id="Chrome with second user"),
-# 	                                        marks=[pytest.mark.xfail(reason="Why")])
-# 						 ]
-#                          )
-
-def test_with_param2(browser, user):
-	pass
+    browser.open(url)
 
 
-@pytest.mark.parametrize("browser", ["Chrome", "Firefox"])
-@pytest.mark.parametrize("user", [1, 2], ids=["First user", "Second user"])
-def test_with_param_again(browser, user):
-	pass
+def test_github_desktop(browser_settings_desktop):
+    browser.element('a[href="/login"').click()
+    browser.element(by.partial_text("Sign in")).should(be.visible)
 
 
-@pytest.fixture(params=["Chrome", "Firefox"])
-def browser(request):
-	return request.param + " from fixture"
+@pytest.fixture(scope='function', params=[(414, 896), (320, 768)])
+def browser_settings_mobile(request):
+    browser.config.window_width = request.param[0]
+    browser.config.window_height = request.param[1]
 
-@pytest.fixture(params=[])
-def prepare_user(request):
-	if not hasattr(request, "param"):
-		raise ValueError("Параметризуй фикстуру!")
-
-def test_with_parametrized_fixture(browser):
-	pass
-
-@pytest.mark.parametrize("prepare_user", [1, 2, 3], indirect=True)
-def test_with_user(prepare_user):
-	pass
+    browser.open(url)
 
 
-# параметризация фикстуры browser только для хрома при помощи indirect - твердо и четко
-@pytest.mark.parametrize("browser", ["Chrome"], indirect=True)
-def test_with_parametrized_fixture_only_chrome(browser):
-	assert browser in ["Chrome from fixture", "Firefox from fixture"]
-
-
-
-
-chrome = pytest.mark.parametrize("browser", ["Chrome"], indirect=True)
-
-
-# вторая версия - параметризация фикстуры browser только для хрома
-@chrome
-def test_with_parametrized_fixture_only_chrome(browser):
-	assert browser in ["Chrome from fixture", "Firefox from fixture"]
-
-
-
-
-@pytest.mark.parametrize("value", {1, 2, 4, 8, 3, 4, 5, 5, 5, 5})
-def test_order(value):
-	pass
-
-@dataclass
-class User:
-	id: int
-	name: str
-	age: int
-	description: str
-
-	def __repr__(self):
-		return f"<{self.id} {self.name}>"
-
-
-user1 = User(id=1, name="Mario", age=32, description="something " * 10)
-user2 = User(id=2, name="Wario", age=62, description="else " * 10)
-
-
-def get_user_name(user):
-	return user.name
-
-
-#@pytest.mark.parametrize("user", [user1, user2], ids=get_user_name)
-@pytest.mark.parametrize("user", [user1, user2], ids=repr)
-def test_testov(user):
-	pass
+def test_github_mobile(browser_settings_mobile):
+    browser.element('[class="octicon octicon-three-bars"]').click()
+    browser.element('a[href="/login"').click()
+    browser.element(by.partial_text("Sign in")).should(be.visible)

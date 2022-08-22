@@ -1,3 +1,5 @@
+import os
+
 import pytest
 import time
 
@@ -49,3 +51,20 @@ def test_six(browser):
 	import random
 	a = random.randint(0, 10)
 	assert a > 5
+
+
+# условия для пропуска тестов
+@pytest.fixture()
+def skip_test(request: pytest.FixtureRequest):
+	if request.config.getvalue("--alluredir") != "allure-results":
+		pytest.skip(reason="Condition")
+
+# @pytest.mark.skipif("not config.getvalue('--alluredir')", reason="Condition")
+# @pytest.mark.skipif(os.getenv("SKIP_TEST") == 'true', reason="Condition")
+# @pytest.mark.usefixtures("skip_test")
+
+
+import os
+@pytest.mark.skipif(os.name, reason="Condition")
+def test_conditionally_skipped():
+	pass
